@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import './App.css';
 
 function findMainFunction(node) {
   if (!node) return null;
@@ -187,53 +188,42 @@ int main(int argc, char *argv[]) {
   }, [argument, mainFunction]);
 
   return (
-    <div style={{ fontFamily: 'monospace', padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <header style={{ borderBottom: '2px solid #333', paddingBottom: '10px', marginBottom: '20px' }}>
-        <h1 style={{ margin: 0 }}>Stack Visualizer</h1>
+    <div className="app-container">
+      <header className="app-header">
+        <h1>Stack Visualizer</h1>
       </header>
-      <main style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-        <div>
+      <main className="app-main">
+        <div className="controls-container">
           <h2>C Code</h2>
           <textarea
             value={cCode}
             onChange={(e) => setCCode(e.target.value)}
             rows={15}
-            style={{ width: '100%', fontFamily: 'monospace', padding: '10px', fontSize: '14px' }}
+            className="code-input"
           />
-          <div style={{ marginTop: '20px' }}>
+          <div className="argument-container">
             <h2>Argument (argv[1])</h2>
             <input
               type="text"
               value={argument}
               onChange={(e) => setArgument(e.target.value)}
-              style={{ width: '100%', fontFamily: 'monospace', padding: '10px', fontSize: '14px' }}
+              className="argument-input"
             />
           </div>
         </div>
-        <div>
+        <div className="stack-container">
           <h2>Stack (High → Low Address)</h2>
-          <div style={{ border: '1px solid #333', padding: '10px', backgroundColor: '#f5f5f5' }}>
+          <div className="stack-visualizer">
             {!mainFunction && cCode && <p>No main function found in the C code.</p>}
             {stack.map((item, index) => (
-              <div key={index} style={{ 
-                display: 'grid', 
-                gridTemplateColumns: '120px 150px 1fr', 
-                gap: '10px',
-                padding: '5px',
-                borderBottom: '1px solid #ddd',
-                backgroundColor: item.name === 'return pointer' ? '#ffebee' : 'white'
-              }}>
-                <span style={{ color: '#666' }}>{item.address}</span>
-                <span style={{ fontWeight: 'bold' }}>{item.name}</span>
-                <span style={{ fontFamily: 'monospace' }}>
+              <div key={index} className={`stack-item ${item.name === 'return pointer' ? 'return-pointer' : ''}`}>
+                <span className="stack-address">{item.address}</span>
+                <span className="stack-name">{item.name}</span>
+                <span className="stack-value">
                   {item.value.split('').map((char, i) => (
                     <span 
                       key={i} 
-                      style={{ 
-                        backgroundColor: overflowedIndices.some(o => o.itemIndex === index && o.charIndex === i) ? '#ff4444' : 'transparent',
-                        color: overflowedIndices.some(o => o.itemIndex === index && o.charIndex === i) ? 'white' : 'black',
-                        padding: '2px'
-                      }}
+                      className={`stack-char ${overflowedIndices.some(o => o.itemIndex === index && o.charIndex === i) ? 'overflow' : ''}`}
                     >
                       {char === '\0' ? '\\0' : char}
                     </span>
@@ -247,5 +237,9 @@ int main(int argc, char *argv[]) {
     </div>
   );
 }
+
+
+
+
 
 export default App;
