@@ -52,7 +52,7 @@ function App() {
         if (!mounted) return;
         
         const parser = new TreeSitterModule.Parser();
-        const C = await TreeSitterModule.Language.load('/tree-sitter-c.wasm');
+        const C = await TreeSitterModule.Language.load(`${process.env.PUBLIC_URL}/tree-sitter-c.wasm`);
         
         parser.setLanguage(C);
         parserRef.current = parser;
@@ -95,13 +95,13 @@ function App() {
       const fetchFileContent = async () => {
         try {
           // Fetch C code
-          const cResponse = await fetch(`/examples/${selectedFile}`);
+          const cResponse = await fetch(`${process.env.PUBLIC_URL}/examples/${selectedFile}`);
           const cText = await cResponse.text();
           setCCode(cText);
 
           // Fetch assembly code
           assemblyFileName = selectedFile.replace('.c', '.bin');
-          const assemblyResponse = await fetch(`/examples/${assemblyFileName}`);
+          const assemblyResponse = await fetch(`${process.env.PUBLIC_URL}/examples/${assemblyFileName}`);
           const assemblyBlob = await assemblyResponse.blob();
           setAssemblyCode(assemblyBlob);
         } catch (error) {
