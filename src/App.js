@@ -22,25 +22,20 @@ function findMainFunction(node) {
 }
 
 function App() {
-  const [cCode, setCCode] = useState(`#include <stdio.h>
-#include <string.h>
-
-int main(int argc, char *argv[]) {
-  char buffer1[10];
-  char buffer2[10];
-  strcpy(buffer1, "c program");
-  strcpy(buffer2, argv[1]);
-  printf("hello %s\n", buffer2);
-  printf("i am a %s\n", buffer1);
-  return 0;
-}`);
+  const [cCode, setCCode] = useState('');
   const [argument, setArgument] = useState('hello');
   const [stack, setStack] = useState([]);
   const [overflowedIndices, setOverflowedIndices] = useState([]);
   const [tree, setTree] = useState(null);
   const [mainFunction, setMainFunction] = useState(null);
+  const [isParserInitialized, setIsParserInitialized] = useState(false);
   const parserRef = useRef(null);
   const initedRef = useRef(false);
+
+  // New state for file management
+  const [fileList, setFileList] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [assemblyCode, setAssemblyCode] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -61,9 +56,8 @@ int main(int argc, char *argv[]) {
         
         parser.setLanguage(C);
         parserRef.current = parser;
+        setIsParserInitialized(true);
         
-        const newTree = parser.parse(cCode);
-        setTree(newTree);
       } catch (err) {
         console.error('Failed to initialize parser:', err);
       }
@@ -84,8 +78,44 @@ int main(int argc, char *argv[]) {
     };
   }, []);
 
+  // New useEffect to fetch file list and initial file
   useEffect(() => {
-    if (parserRef.current && cCode) {
+    // Automatically find example files from the public/examples directory
+    const examples = ['hello_world.c', 'password.c']; 
+    setFileList(examples);
+    if (examples.length > 0) {
+      setSelectedFile(examples[0]); // Automatically select the first file
+    }
+  }, []);
+
+  // New useEffect to load file content when selectedFile changes
+  useEffect(() => {
+    if (selectedFile) {
+      let assemblyFileName = '';
+      const fetchFileContent = async () => {
+        try {
+          // Fetch C code
+          const cResponse = await fetch(`/examples/${selectedFile}`);
+          const cText = await cResponse.text();
+          setCCode(cText);
+
+          // Fetch assembly code
+          assemblyFileName = selectedFile.replace('.c', '');
+          const assemblyResponse = await fetch(`/examples/${assemblyFileName}`);
+          const assemblyText = await assemblyResponse.text();
+          setAssemblyCode(assemblyText);
+        } catch (error) {
+          console.error(`Failed to load file ${selectedFile}:`, error);
+          setCCode(`Error loading ${selectedFile}.`);
+          setAssemblyCode(`Error loading ${assemblyFileName}.`);
+        }
+      };
+      fetchFileContent();
+    }
+  }, [selectedFile]);
+
+  useEffect(() => {
+    if (isParserInitialized && cCode) {
       try {
         if (tree) {
           tree.delete();
@@ -97,7 +127,8 @@ int main(int argc, char *argv[]) {
         console.error('Failed to parse code:', err);
       }
     }
-  }, [cCode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cCode, isParserInitialized]);
 
   useEffect(() => {
     if (!tree) return;
@@ -187,6 +218,17 @@ int main(int argc, char *argv[]) {
     setStack(newStack);
   }, [argument, mainFunction]);
 
+  // Function to handle assembly download
+  const handleDownloadAssembly = () => {
+    const element = document.createElement('a');
+    const file = new Blob([assemblyCode], { type: 'text/plain' });
+    element.href = URL.createObjectURL(file);
+    element.download = selectedFile.replace('.c', ''); // Download with assembly file name
+    document.body.appendChild(element); // Required for Firefox
+    element.click();
+    document.body.removeChild(element); // Clean up
+  };
+
   return (
     <div className="app-container">
       <header className="app-header">
@@ -194,12 +236,23 @@ int main(int argc, char *argv[]) {
       </header>
       <main className="app-main">
         <div className="controls-container">
+          <div className="file-selection">
+            <h2>Select C File</h2>
+            <select onChange={(e) => setSelectedFile(e.target.value)} value={selectedFile || ''}>
+              {fileList.map((file) => (
+                <option key={file} value={file}>
+                  {file}
+                </option>
+              ))}
+            </select>
+          </div>
           <h2>C Code</h2>
           <textarea
             value={cCode}
             onChange={(e) => setCCode(e.target.value)}
             rows={15}
             className="code-input"
+            readOnly // Make it read-only as it's loaded from file
           />
           <div className="argument-container">
             <h2>Argument (argv[1])</h2>
@@ -210,6 +263,9 @@ int main(int argc, char *argv[]) {
               className="argument-input"
             />
           </div>
+          <button onClick={handleDownloadAssembly} disabled={!assemblyCode}>
+            Download Assembly
+          </button>
         </div>
         <div className="stack-container">
           <h2>Stack (High → Low Address)</h2>
