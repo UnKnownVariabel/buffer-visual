@@ -100,14 +100,14 @@ function App() {
           setCCode(cText);
 
           // Fetch assembly code
-          assemblyFileName = selectedFile.replace('.c', '');
+          assemblyFileName = selectedFile.replace('.c', '.bin');
           const assemblyResponse = await fetch(`/examples/${assemblyFileName}`);
-          const assemblyText = await assemblyResponse.text();
-          setAssemblyCode(assemblyText);
+          const assemblyBlob = await assemblyResponse.blob();
+          setAssemblyCode(assemblyBlob);
         } catch (error) {
           console.error(`Failed to load file ${selectedFile}:`, error);
           setCCode(`Error loading ${selectedFile}.`);
-          setAssemblyCode(`Error loading ${assemblyFileName}.`);
+          setAssemblyCode(null);
         }
       };
       fetchFileContent();
@@ -220,9 +220,9 @@ function App() {
 
   // Function to handle assembly download
   const handleDownloadAssembly = () => {
+    if (!assemblyCode) return;
     const element = document.createElement('a');
-    const file = new Blob([assemblyCode], { type: 'text/plain' });
-    element.href = URL.createObjectURL(file);
+    element.href = URL.createObjectURL(assemblyCode);
     element.download = selectedFile.replace('.c', ''); // Download with assembly file name
     document.body.appendChild(element); // Required for Firefox
     element.click();
