@@ -186,7 +186,6 @@ function App() {
           newStack.push({ name: identifier, value: '', address: `0x${(addressCounter -= 4).toString(16)}` });
         }
       }
-      console.log(newStack);
 
       const callExpressions = compoundStatement.namedChildren.filter(c => c.type === 'expression_statement' && c.namedChildren[0].type === 'call_expression');
       for (const call of callExpressions) {
@@ -200,7 +199,10 @@ function App() {
             let newValue = '';
             if (src === 'argv[1]') {
               newValue = argument;
-            }
+            } else if (src.startsWith('"') && src.endsWith('"')) {
+              // It's a string literal, remove the quotes
+              newValue = src.slice(1, -1);           
+	    }
             const bufferSize = newStack[destIndex].value.length;
             const overflow = newValue.length > bufferSize;
             
