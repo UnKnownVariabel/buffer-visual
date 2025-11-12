@@ -43,6 +43,7 @@ function App() {
   const [tree, setTree] = useState(null);
   const [mainFunction, setMainFunction] = useState(null);
   const [isParserInitialized, setIsParserInitialized] = useState(false);
+  const [displayMode, setDisplayMode] = useState('char'); // 'char' or 'hex'
   const parserRef = useRef(null);
   const initedRef = useRef(false);
 
@@ -287,20 +288,34 @@ function App() {
         <div className="stack-container">
           <h2>Stack (High → Low Address)</h2>
           <div className="stack-visualizer">
+            <div className="display-mode-toggle">
+              <button onClick={() => setDisplayMode('char')} className={displayMode === 'char' ? 'active' : ''}>Char</button>
+              <button onClick={() => setDisplayMode('hex')} className={displayMode === 'hex' ? 'active' : ''}>Hex</button>
+            </div>
             {!mainFunction && cCode && <p>No main function found in the C code.</p>}
             {stack.map((item, index) => (
               <div key={index} className={`stack-item ${item.name === 'return pointer' ? 'return-pointer' : ''}`}>
                 <span className="stack-address">{item.address}</span>
                 <span className="stack-name">{item.name}</span>
                 <span className="stack-value">
-                  {item.value.split('').map((char, i) => (
-                    <span 
-                      key={i} 
-                      className={`stack-char ${overflowedIndices.some(o => o.itemIndex === index && o.charIndex === i) ? 'overflow' : ''}`}
-                    >
-                      {char === '\0' ? '\\0' : char}
-                    </span>
-                  ))}
+                  {displayMode === 'char'
+                    ? item.value.split('').map((char, i) => (
+                        <span
+                          key={i}
+                          className={`stack-char ${overflowedIndices.some(o => o.itemIndex === index && o.charIndex === i) ? 'overflow' : ''}`}
+                        >
+                          {char === '\0' ? '\\0' : char}
+                        </span>
+                      ))
+                    : stringToHex(item.value).match(/.{1,2}/g)?.map((hex, i) => (
+                        <span
+                          key={i}
+                          className={`stack-hex ${overflowedIndices.some(o => o.itemIndex === index && o.charIndex === i) ? 'overflow' : ''}`}
+                        >
+                          {hex}
+                        </span>
+                      ))
+                  }
                 </span>
               </div>
             ))}

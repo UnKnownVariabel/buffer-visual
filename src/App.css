@@ -129,6 +129,42 @@ h2 {
   font-weight: bold;
 }
 
+.stack-hex {
+  display: inline-block;
+  padding: 3px 5px;
+  margin: 1px;
+  border-radius: 3px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.stack-hex.overflow {
+  background-color: #e74c3c;
+  color: white;
+  font-weight: bold;
+}
+
+.display-mode-toggle {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.display-mode-toggle button {
+  background-color: #ecf0f1;
+  color: #2c3e50;
+  border: 1px solid #bdc3c7;
+  padding: 5px 10px;
+  margin-left: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.display-mode-toggle button.active {
+  background-color: #3498db;
+  color: white;
+  border-color: #3498db;
+}
+
 .file-selection {
   margin-bottom: 20px;
 }
@@ -155,7 +191,7 @@ h2 {
   box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
 }
 
-button {
+.controls-container button {
   background-color: #3498db;
   color: white;
   padding: 10px 15px;
@@ -167,11 +203,11 @@ button {
   transition: background-color 0.3s ease;
 }
 
-button:hover {
+.controls-container button:hover {
   background-color: #2980b9;
 }
 
-button:disabled {
+.controls-container button:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
 }
