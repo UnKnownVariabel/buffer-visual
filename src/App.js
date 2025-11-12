@@ -1,6 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
+function stringToHex(str) {
+  return Array.from(str)
+    .map(char => char.charCodeAt(0).toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function hexToString(hex) {
+  let result = '';
+  for (let i = 0; i < hex.length; i += 2) {
+    result += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+  }
+  return result;
+}
+
 function findMainFunction(node) {
   if (!node) return null;
   if (node.type === 'function_definition') {
@@ -148,7 +162,9 @@ function App() {
     const compoundStatement = mainFunction.namedChildren.find(c => c.type === 'compound_statement');
     if (compoundStatement) {
       // Add return pointer FIRST (it goes at the bottom = lowest address)
-      newStack.push({ name: 'return pointer', value: '0x4005e7', address: `0x${(addressCounter -= 8).toString(16)}` });
+      const ripHex = "00007ffff7c27675"
+      const rip = hexToString(ripHex);
+      newStack.push({ name: 'return pointer', value: rip, address: `0x${(addressCounter -= 8).toString(16)}` });
 
       // Then add variables in REVERSE order (last declared = lowest address)
       const declarations = compoundStatement.namedChildren.filter(c => c.type === 'declaration');
@@ -159,7 +175,7 @@ function App() {
           const identifier = declarator.namedChildren[0].text;
           const sizeNode = declarator.namedChildren.find(c => c.type === 'number_literal');
           const size = sizeNode ? parseInt(sizeNode.text) : 0;
-          newStack.push({ name: identifier, value: ''.padEnd(size, '\0'), address: `0x${(addressCounter -= size).toString(16)}` });
+          newStack.push({ name: identifier, value: ''.padEnd(size, '0'), address: `0x${(addressCounter -= size).toString(16)}` });
         } else if (declarator.type === 'init_declarator') {
           const identifier = declarator.namedChildren[0].text;
           const value = declarator.namedChildren[1].text;
@@ -169,6 +185,7 @@ function App() {
           newStack.push({ name: identifier, value: '', address: `0x${(addressCounter -= 4).toString(16)}` });
         }
       }
+      console.log(newStack);
 
       const callExpressions = compoundStatement.namedChildren.filter(c => c.type === 'expression_statement' && c.namedChildren[0].type === 'call_expression');
       for (const call of callExpressions) {
@@ -186,7 +203,7 @@ function App() {
             const bufferSize = newStack[destIndex].value.length;
             const overflow = newValue.length > bufferSize;
             
-            newStack[destIndex].value = newValue.substring(0, bufferSize);
+            newStack[destIndex].value = newValue.substring(0, bufferSize).padEnd(bufferSize, '\0');
             
             const newOverflowedIndices = [];
             if (overflow) {
