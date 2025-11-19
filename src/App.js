@@ -96,7 +96,7 @@ function App() {
   // New useEffect to fetch file list and initial file
   useEffect(() => {
     // Automatically find example files from the public/examples directory
-    const examples = ['hello_world.c', 'password.c']; 
+    const examples = ['hello_world.c', 'password.c', 'reverse.c']; 
     setFileList(examples);
     if (examples.length > 0) {
       setSelectedFile(examples[0]); // Automatically select the first file
