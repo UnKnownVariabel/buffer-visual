@@ -285,7 +285,7 @@ function App() {
             />
           </div>
           <button onClick={handleDownloadAssembly} disabled={!assemblyCode}>
-            Download Assembly
+            Download Binary
           </button>
         </div>
         <div className="stack-container">
