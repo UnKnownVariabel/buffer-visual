@@ -203,6 +203,7 @@ function App() {
               // It's a string literal, remove the quotes
               newValue = src.slice(1, -1);           
 	    }
+	    newValue += "\0";
             const bufferSize = newStack[destIndex].value.length;
             const overflow = newValue.length > bufferSize;
             
